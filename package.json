@@ -1,0 +1,21 @@
+{
+  "name": "typemunge",
+  "version": "0.0.4",
+  "author": "author",
+  "main": "app.js",
+  "scripts": {
+    "test": "node_modules\\.bin\\mocha --recursive",
+    "prepublish":  "node \"./node_modules/shebangify/shebangify.js\" app.js"
+  },
+  "devDependencies": {
+    "chai": "^3.2.0",
+    "mocha": "^2.2.5",
+    "shebangify": "0.0.0"
+  },
+  "dependencies": {
+    "glob": "^5.0.14",
+    "q": "^1.4.1",
+    "underscore": "^1.8.3",
+    "yargs": "^3.15.0"
+  }
+}

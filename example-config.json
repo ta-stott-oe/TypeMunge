@@ -1,0 +1,19 @@
+﻿{
+    "moduleType": "amd",
+    "js": "path/to/original.js",
+    "dts": "path/to/original.d.ts",
+    "jsOut": "path/to/munged.js",
+    "dtsOut": "path/to/munged.d.ts",
+    "ambientModuleName": "myModule",
+	"imports": {
+        "jquery": "$",
+		"underscore": "_",
+        "knockout": "ko",
+        "xml": "_xml"
+	},
+    "inlineTextFiles": {
+        "dir": "Templates",
+        "pattern" : "**/*.html",
+        "namespace": "Templates"
+    }
+}

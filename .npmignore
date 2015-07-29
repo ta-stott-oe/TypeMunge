@@ -1,0 +1,7 @@
+*.ts
+bin
+obj
+*.dat
+.settings
+test
+typings
