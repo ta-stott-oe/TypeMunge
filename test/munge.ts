@@ -170,5 +170,23 @@ describe('munge', () => {
 				expect(stripNewlines(result.dtsMunged)).to.be.equal(expectedDts);
 			})
 	})
+	
+	it('should munge to amd with variable with top-level assignment', () => {
+		var js = "var Blah = 'giblets';";
+		var dts = 'declare var Blah : string';
+		
+		var expectedJs = "define(['require','exports'], function(require,exports){var Blah = 'giblets';exports.Blah = Blah;})";
+		
+		var config : typemunge.TypeMungeConfig = {
+			moduleType: 'amd',
+			moduleName: 'test',
+			imports: {}
+		};
+		
+		return typemunge.munge(config, dts, js)
+			.then(result => {
+				expect(stripNewlines(result.jsMunged)).to.be.equal(expectedJs);
+			})
+	})
 
 })

@@ -85,7 +85,7 @@ interface Export {
 
 function getExports(dtsContent : string): Export[]{
     var exports: Export[] = [];
-	var regex = /declare\s+(module|class|enum|var)\s+(\S+)\s*{/g;
+	var regex = /declare\s+(module|class|enum|var)\s+([A-Za-z0-9_\$]+)/g;
 	for (var matches = regex.exec(dtsContent); matches != null; matches = regex.exec(dtsContent)) {
         exports.push({
             Name: matches[2],
