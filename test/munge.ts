@@ -36,8 +36,7 @@ describe('munge', () => {
 		var config : typemunge.TypeMungeConfig = {
 			moduleType: 'amd',
 			moduleName: 'test',
-			imports: {},
-			isAmbient: true
+			imports: {}
 		};
 		
 		assertMunged(dts, js, expectedDts, expectedJs, config, done);
@@ -55,8 +54,7 @@ describe('munge', () => {
 			moduleName: 'test',
 			imports:  {
 				jquery: '$'
-			},
-			isAmbient: true
+			}
 		}
 		
 		assertMunged(dts, js, expectedDts, expectedJs, config, done);
@@ -72,8 +70,7 @@ describe('munge', () => {
 		var config : typemunge.TypeMungeConfig = {
 			moduleType: 'commonjs',
 			moduleName: 'test',
-			imports: {},
-			isAmbient: true
+			imports: {}
 		};
 		
 		assertMunged(dts, js, expectedDts, expectedJs, config, done);
@@ -91,8 +88,7 @@ describe('munge', () => {
 			moduleName: 'test',
 			imports: {
 				jquery: '$'
-			},
-			isAmbient: true
+			}
 		};
 		
 		assertMunged(dts, js, expectedDts, expectedJs, config, done);
@@ -110,8 +106,7 @@ describe('munge', () => {
 			moduleName: 'test',
 			imports: {
 				jquery: ''
-			},
-			isAmbient: true
+			}
 		};
 		
 		assertMunged(dts, js, expectedDts, expectedJs, config, done);
@@ -132,42 +127,21 @@ describe('munge', () => {
 					alias: '$',
 					windowVariables: ['$', 'jQuery']
 				}
-			},
-			isAmbient: true
+			}
 		};
 		
 		assertMunged(dts, js, expectedDts, expectedJs, config, done);
 	})
 	
-	it('should munge dts only', () => {
-		var dts = 'declare module Blah {}';
-		
-		var expectedDts = "declare module 'test' {module Blah {}}";
-		
-		var config : typemunge.TypeMungeConfig = {
-			moduleType: 'commonjs',
-			moduleName: 'test',
-			imports: {},
-			isAmbient: true
-		};
-		
-		return typemunge.munge(config, dts)
-			.then(result => {
-				expect(stripNewlines(result.dtsMunged)).to.be.equal(expectedDts);
-				expect(result.jsMunged).to.be.null;
-			})
-	})
-	
-	it('should munge dts only non-ambient', () => {
+	it('should munge to global module', () => {
 		var dts = 'declare module Blah {}';
 		
 		var expectedDts = "declare module test {module Blah {}}";
 		
 		var config : typemunge.TypeMungeConfig = {
-			moduleType: 'commonjs',
+			moduleType: 'global',
 			moduleName: 'test',
 			imports: {},
-			isAmbient: false
 		};
 		
 		return typemunge.munge(config, dts)
@@ -176,4 +150,5 @@ describe('munge', () => {
 				expect(result.jsMunged).to.be.null;
 			})
 	})
+
 })

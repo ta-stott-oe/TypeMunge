@@ -7,7 +7,6 @@ var glob = require('glob');
 export interface TypeMungeConfig {
     moduleType: string;
     moduleName: string;
-    isAmbient: boolean;
     imports: TypeMungeImportsConfig;
     inlineTextFiles?: InlineTextConfig;
 }
@@ -91,9 +90,17 @@ function getExports(dtsContent : string): Export[]{
 	return _.uniq(exports, false, e => e.Name);
 }
 
-function mungeDts(dtsContent: string, moduleName : string, isAmbient: boolean): string{
+function mungeDts(dtsContent: string, moduleName : string, moduleType : string): string{
 
-    moduleName = isAmbient ? `'${moduleName}'` : moduleName;
+    switch(moduleType) {
+        case 'global': break; //Use un-quoted module name
+        case 'amd':
+        case 'commonjs':
+            moduleName = `'${moduleName}'`; //Use quoted (ambient) module name
+            break;
+        default:
+            throw new Error(`Unrecognized module type: '${moduleType}'`);
+    }
      
     return "declare module " + moduleName + " {\r\n"
         + dtsContent.replace(/declare module/g, 'module')
@@ -202,7 +209,7 @@ export function munge( config: TypeMungeConfig, dtsContent : string, jsContent? 
     var exports = getExports(dtsContent);
     console.log(`Found the following exports:\n${exports.map(e => e.Name + ' (' + e.Type + ')').join('\n')}`);
 
-    var mungedDts = mungeDts(dtsContent, config.moduleName, config.isAmbient);
+    var mungedDts = mungeDts(dtsContent, config.moduleName, config.moduleType);
     
     return (
             jsContent
