@@ -1,13 +1,13 @@
 {
   "name": "typemunge",
-  "version": "0.0.5",
+  "version": "0.1.1",
   "author": "Tim Stott",
   "main": "app.js",
-  "bin": "app.js,",
+  "bin": "app.js",
   "scripts": {
     "test": "npm run build && node_modules\\.bin\\mocha --recursive",
     "build": "tsc -p .\\",
-    "prepublish": "npm run test && npm version patch && node \"./node_modules/shebangify/shebangify.js\" app.js"
+    "prepublish": "npm run test && node \"./node_modules/shebangify/shebangify.js\" app.js"
   },
   "devDependencies": {
     "chai": "^3.2.0",
