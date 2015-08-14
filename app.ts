@@ -38,20 +38,22 @@ objectFromJsonFile<typemunge.TypeMungeCliConfig>(argv['config'])
         var _jsOutPath = config.jsOut || argv['js'];
 		var _libraryName = config.moduleName;
 	
-        var missingFiles = [_dtsPath, _jsPath].filter(f => !fs.existsSync(f));
+        var inputFiles = [_dtsPath, _jsPath].filter(f => !!f);
+        var missingFiles = inputFiles.filter(f => !fs.existsSync(f));
         if (missingFiles.length) {
             throw new Error("Missing required files: " + missingFiles.join(', '));
         } 
 
-        return Q.all([_dtsPath, _jsPath].map(p => Q.nfcall<string>(fs.readFile, p, 'utf8')))
-			.then(files => {
-				
-                return typemunge.munge(files[0], files[1], config)
+        return Q.all(inputFiles.map(p => Q.nfcall<string>(fs.readFile, p, 'utf8')))
+			.then(fileContents => {			
+                return typemunge.munge(config, fileContents[0], fileContents[1])
                     .then(munged => {
-                        return Q.all([
-                            Q.nfcall(fs.writeFile, _jsOutPath, munged.jsMunged),
-                            Q.nfcall(fs.writeFile, _dtsOutPath, munged.dtsMunged)
-                        ])
+                        if(munged.jsMunged)
+                            return Q.all([
+                                Q.nfcall(fs.writeFile, _jsOutPath, munged.jsMunged),
+                                Q.nfcall(fs.writeFile, _dtsOutPath, munged.dtsMunged)
+                            ])
+                        else return Q.nfcall(fs.writeFile, _dtsOutPath, munged.dtsMunged);
                     })
 			});
         })

@@ -5,6 +5,8 @@ var expect = chai.expect;
 import Q = require('q')
 import typemunge = require('../typemunge')
 
+var stripNewlines = (str : string) => str.replace(/\r?\n/g, '');
+
 function assertMunged(dtsIn : string, 
 	jsIn:string, 
 	dtsExpected:string, 
@@ -12,11 +14,9 @@ function assertMunged(dtsIn : string,
 	config: typemunge.TypeMungeConfig,
 	done: MochaDone){
 	
-	typemunge.munge(dtsIn, jsIn, config)
+	typemunge.munge(config, dtsIn, jsIn)
 			.done(munged => {
-				
-				var stripNewlines = (str : string) => str.replace(/\r?\n/g, '');
-				
+
 				expect(stripNewlines(munged.jsMunged)).to.be.equal(stripNewlines(jsExpected));
 				expect(stripNewlines(munged.dtsMunged)).to.be.equal(stripNewlines(dtsExpected));
 				
@@ -137,5 +137,43 @@ describe('munge', () => {
 		};
 		
 		assertMunged(dts, js, expectedDts, expectedJs, config, done);
+	})
+	
+	it('should munge dts only', () => {
+		var dts = 'declare module Blah {}';
+		
+		var expectedDts = "declare module 'test' {module Blah {}}";
+		
+		var config : typemunge.TypeMungeConfig = {
+			moduleType: 'commonjs',
+			moduleName: 'test',
+			imports: {},
+			isAmbient: true
+		};
+		
+		return typemunge.munge(config, dts)
+			.then(result => {
+				expect(stripNewlines(result.dtsMunged)).to.be.equal(expectedDts);
+				expect(result.jsMunged).to.be.null;
+			})
+	})
+	
+	it('should munge dts only non-ambient', () => {
+		var dts = 'declare module Blah {}';
+		
+		var expectedDts = "declare module test {module Blah {}}";
+		
+		var config : typemunge.TypeMungeConfig = {
+			moduleType: 'commonjs',
+			moduleName: 'test',
+			imports: {},
+			isAmbient: false
+		};
+		
+		return typemunge.munge(config, dts)
+			.then(result => {
+				expect(stripNewlines(result.dtsMunged)).to.be.equal(expectedDts);
+				expect(result.jsMunged).to.be.null;
+			})
 	})
 })

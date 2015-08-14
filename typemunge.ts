@@ -91,9 +91,11 @@ function getExports(dtsContent : string): Export[]{
 	return _.uniq(exports, false, e => e.Name);
 }
 
-function mungeDts(dtsContent: string, moduleName : string): string{
+function mungeDts(dtsContent: string, moduleName : string, isAmbient: boolean): string{
 
-    return "declare module '" + moduleName + "' {\r\n"
+    moduleName = isAmbient ? `'${moduleName}'` : moduleName;
+     
+    return "declare module " + moduleName + " {\r\n"
         + dtsContent.replace(/declare module/g, 'module')
             .replace(/declare class/g, 'class')
             .replace(/declare enum/g, 'enum')
@@ -194,15 +196,19 @@ function mungeJs(jsContent : string, exports : Export[],
 	}
 }
 
-export function munge(dtsContent : string, jsContent : string, 
-    config: TypeMungeConfig) : Q.Promise<{jsMunged: string; dtsMunged : string;}> {
+export function munge( config: TypeMungeConfig, dtsContent : string, jsContent? : string) 
+    : Q.Promise<{jsMunged: string; dtsMunged : string;}> {
         
     var exports = getExports(dtsContent);
     console.log(`Found the following exports:\n${exports.map(e => e.Name + ' (' + e.Type + ')').join('\n')}`);
 
-    var mungedDts = mungeDts(dtsContent, config.moduleName);
+    var mungedDts = mungeDts(dtsContent, config.moduleName, config.isAmbient);
     
-    return mungeJs(jsContent, exports, config.imports, config.inlineTextFiles, config.moduleType)
+    return (
+            jsContent
+                ? mungeJs(jsContent, exports, config.imports, config.inlineTextFiles, config.moduleType)
+                : Q<string>(null)
+        )
         .then(mungedJs => {
             return {
                 jsMunged: mungedJs,
