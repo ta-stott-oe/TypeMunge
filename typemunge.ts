@@ -8,6 +8,7 @@ export interface TypeMungeConfig {
     moduleType: string;
     moduleName: string;
     imports: TypeMungeImportsConfig;
+    dtsImports?: TypeMungeDtsImportsConfig;
     inlineTextFiles?: InlineTextConfig;
 }
 
@@ -25,6 +26,10 @@ interface TypeMungeImportConfig {
 
 export interface TypeMungeImportsConfig {
     [key: string]: string|TypeMungeImportConfig;
+}
+
+export interface TypeMungeDtsImportsConfig {
+    [key: string]: string;
 }
 
 interface InlineTextConfig {
@@ -90,7 +95,7 @@ function getExports(dtsContent : string): Export[]{
 	return _.uniq(exports, false, e => e.Name);
 }
 
-function mungeDts(dtsContent: string, moduleName : string, moduleType : string): string{
+function mungeDts(dtsContent: string, moduleName : string, moduleType : string, imports : TypeMungeDtsImportsConfig): string{
 
     switch(moduleType) {
         case 'global': break; //Use un-quoted module name
@@ -103,6 +108,7 @@ function mungeDts(dtsContent: string, moduleName : string, moduleType : string):
     }
      
     return "declare module " + moduleName + " {\r\n"
+        + Object.keys(imports || {}).map(imp => `import ${imports[imp]} = require('${imp}');\r\n`)
         + dtsContent.replace(/declare module/g, 'module')
             .replace(/declare class/g, 'class')
             .replace(/declare enum/g, 'enum')
@@ -209,7 +215,7 @@ export function munge( config: TypeMungeConfig, dtsContent : string, jsContent? 
     var exports = getExports(dtsContent);
     console.log(`Found the following exports:\n${exports.map(e => e.Name + ' (' + e.Type + ')').join('\n')}`);
 
-    var mungedDts = mungeDts(dtsContent, config.moduleName, config.moduleType);
+    var mungedDts = mungeDts(dtsContent, config.moduleName, config.moduleType, config.dtsImports);
     
     return (
             jsContent

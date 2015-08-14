@@ -150,5 +150,25 @@ describe('munge', () => {
 				expect(result.jsMunged).to.be.null;
 			})
 	})
+	
+	it('should munge to amd with dts import', () => {
+		var dts = 'declare module Blah {}';
+		
+		var expectedDts = "declare module 'test' {import wotsit = require('thing');module Blah {}}";
+		
+		var config : typemunge.TypeMungeConfig = {
+			moduleType: 'amd',
+			moduleName: 'test',
+			imports: {},
+			dtsImports: {
+				thing: 'wotsit'
+			}
+		};
+		
+		return typemunge.munge(config, dts)
+			.then(result => {
+				expect(stripNewlines(result.dtsMunged)).to.be.equal(expectedDts);
+			})
+	})
 
 })
