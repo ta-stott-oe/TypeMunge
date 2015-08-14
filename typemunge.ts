@@ -108,7 +108,7 @@ function mungeDts(dtsContent: string, moduleName : string, moduleType : string, 
     }
      
     return "declare module " + moduleName + " {\r\n"
-        + Object.keys(imports || {}).map(imp => `import ${imports[imp]} = require('${imp}');\r\n`)
+        + Object.keys(imports || {}).map(imp => `import ${imports[imp]} = require('${imp}');`).join('\r\n')
         + dtsContent.replace(/declare module/g, 'module')
             .replace(/declare class/g, 'class')
             .replace(/declare enum/g, 'enum')

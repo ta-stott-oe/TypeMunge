@@ -151,17 +151,18 @@ describe('munge', () => {
 			})
 	})
 	
-	it('should munge to amd with dts import', () => {
+	it('should munge to amd with dts imports', () => {
 		var dts = 'declare module Blah {}';
 		
-		var expectedDts = "declare module 'test' {import wotsit = require('thing');module Blah {}}";
+		var expectedDts = "declare module 'test' {import wotsit = require('thing');import foo = require('bar');module Blah {}}";
 		
 		var config : typemunge.TypeMungeConfig = {
 			moduleType: 'amd',
 			moduleName: 'test',
 			imports: {},
 			dtsImports: {
-				thing: 'wotsit'
+				thing: 'wotsit',
+				bar: 'foo'
 			}
 		};
 		
