@@ -156,7 +156,7 @@ function mungeJs(jsContent : string, exports : Export[],
             if(typeof imports[k] === 'string') return requireStatement(k, <string>imports[k]);
             else {
                 var importConfig = <TypeMungeImportConfig>imports[k];
-                var windowVariables = importConfig.windowVariables.map(wv => `window.${wv} = ${importConfig.alias};`).join('\r\n');
+                var windowVariables = `if(typeof window !== 'undefined'){\r\n${importConfig.windowVariables.map(wv => `window.${wv} = ${importConfig.alias};`).join('\r\n')}\r\n}`;
                 return `${requireStatement(k, importConfig.alias)}\r\n${windowVariables}`;
             }
         }).join('\r\n');

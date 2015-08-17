@@ -116,7 +116,7 @@ describe('munge', () => {
 		var dts = 'declare module Blah {}';
 		var js = 'var Blah;'
 		
-		var expectedJs = "var $ = require('jquery');window.$ = $;window.jQuery = $;var Blah;exports.Blah = Blah;";
+		var expectedJs = "var $ = require('jquery');if(typeof window !== 'undefined'){window.$ = $;window.jQuery = $;}var Blah;exports.Blah = Blah;";
 		var expectedDts = "declare module 'test' {module Blah {}}";
 		
 		var config : typemunge.TypeMungeConfig = {
