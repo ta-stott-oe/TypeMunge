@@ -2,6 +2,8 @@ import yargs = require('yargs')
 import fs = require('fs');
 import typemunge = require('./typemunge')
 import Q = require('q')
+import path = require('path')
+var mkdirp = require('mkdirp')
 
 function objectFromJsonFile<T>(filepath : string) : Q.Promise<T>{
 
@@ -16,7 +18,8 @@ var argv = yargs
     .options({
         'c': {
             alias: 'config',
-            type: 'string'
+            type: 'string',
+            require: true
         },
         'j': {
             alias: 'js',
@@ -25,20 +28,44 @@ var argv = yargs
         'd': {
             alias: 'dts',
             type: 'string',
+        },
+        'm': {
+            alias: 'mkdir',
+            type: 'boolean'
         }
     })
     .argv;
 
+function writeFile(filepath : string, contents : string, mkdir : boolean) : Q.Promise<any> {
+    var dir = path.dirname(filepath);
+    
+    var ensureDir = dir !== '.' || !fs.existsSync(dir) 
+        ? mkdir
+            ? Q.nfcall<any>(mkdirp, dir)
+            : Q.reject<any>(`Directory not found: ${dir}`)
+        : Q(true);
+    
+    return ensureDir.then(() => Q.nfcall(fs.writeFile, filepath, contents));
+}
+
+function resolveSafe(...pathsegments : any[]) : string {
+    if(pathsegments.some(ps => ps === null || ps === undefined)) return null;
+    else return path.resolve.apply(path, pathsegments);
+}
+
 objectFromJsonFile<typemunge.TypeMungeCliConfig>(argv['config'])
 	.then(config => {
 	
-        var _dtsPath = config.dts; ;
-        var _jsPath = config.js;
-        var _dtsOutPath = config.dtsOut || argv['dts'];
-        var _jsOutPath = config.jsOut || argv['js'];
-		var _libraryName = config.moduleName;
+        //Resolve all paths relative to config file
+        var baseDir = path.dirname(argv['config']);
+    
+        var dtsInPath = resolveSafe(baseDir, config.dts);
+        var jsInPath = resolveSafe(baseDir, config.js);
+        var dtsOutPath = argv['dts'] || resolveSafe(baseDir, config.dtsOut);
+        var jsOutPath = argv['js'] || resolveSafe(baseDir, config.jsOut);
+		var libraryName = config.moduleName;
 	
-        var inputFiles = [_dtsPath, _jsPath].filter(f => !!f);
+        var inputFiles = [dtsInPath, jsInPath].filter(f => !!f);
         var missingFiles = inputFiles.filter(f => !fs.existsSync(f));
         if (missingFiles.length) {
             throw new Error("Missing required files: " + missingFiles.join(', '));
@@ -50,14 +77,17 @@ objectFromJsonFile<typemunge.TypeMungeCliConfig>(argv['config'])
                     .then(munged => {
                         if(munged.jsMunged)
                             return Q.all([
-                                Q.nfcall(fs.writeFile, _jsOutPath, munged.jsMunged),
-                                Q.nfcall(fs.writeFile, _dtsOutPath, munged.dtsMunged)
+                                writeFile(jsOutPath, munged.jsMunged, argv['mkdir']),
+                                writeFile(dtsOutPath, munged.dtsMunged, argv['mkdir'])
                             ])
-                        else return Q.nfcall(fs.writeFile, _dtsOutPath, munged.dtsMunged);
+                        else return writeFile(dtsOutPath, munged.dtsMunged, argv['mkdir']);
                     })
 			});
         })
-        .fail(error => console.log(error))
-	    .done();
+	    .done(() => {}, 
+            error => {
+                console.log(error);
+                process.exit(1);
+            });
 	
 	
