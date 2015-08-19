@@ -32,6 +32,10 @@ var argv = yargs
         'm': {
             alias: 'mkdir',
             type: 'boolean'
+        },
+        'v': {
+            alias: 'verbose',
+            type: 'boolean'
         }
     })
     .argv;
@@ -73,7 +77,7 @@ objectFromJsonFile<typemunge.TypeMungeCliConfig>(argv['config'])
 
         return Q.all(inputFiles.map(p => Q.nfcall<string>(fs.readFile, p, 'utf8')))
 			.then(fileContents => {			
-                return typemunge.munge(config, fileContents[0], fileContents[1])
+                return typemunge.munge(config, fileContents[0], fileContents[1], argv['verbose'])
                     .then(munged => {
                         if(munged.jsMunged)
                             return Q.all([

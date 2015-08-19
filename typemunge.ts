@@ -209,11 +209,11 @@ function mungeJs(jsContent : string, exports : Export[],
 	}
 }
 
-export function munge( config: TypeMungeConfig, dtsContent : string, jsContent? : string) 
+export function munge( config: TypeMungeConfig, dtsContent : string, jsContent? : string, verbose?:boolean) 
     : Q.Promise<{jsMunged: string; dtsMunged : string;}> {
         
     var exports = getExports(dtsContent);
-    console.log(`Found the following exports:\n${exports.map(e => e.Name + ' (' + e.Type + ')').join('\n')}`);
+    if(verbose) console.log(`Found the following exports:\n${exports.map(e => e.Name + ' (' + e.Type + ')').join('\n')}`);
 
     var mungedDts = mungeDts(dtsContent, config.moduleName, config.moduleType, config.dtsImports);
     
