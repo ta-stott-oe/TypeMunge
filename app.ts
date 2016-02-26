@@ -43,7 +43,7 @@ var argv = yargs
 function writeFile(filepath : string, contents : string, mkdir : boolean) : Q.Promise<any> {
     var dir = path.dirname(filepath);
     
-    var ensureDir = dir !== '.' || !fs.existsSync(dir) 
+    var ensureDir = dir !== '.' && !fs.existsSync(dir) 
         ? mkdir
             ? Q.nfcall<any>(mkdirp, dir)
             : Q.reject<any>(`Directory not found: ${dir}`)
